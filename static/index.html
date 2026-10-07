@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WhatsMyPC</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="alternate icon" href="WhatsMyPC.ico">
+<!-- UIcons Rounded Icon Library by Flaticon -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/regular/rounded.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/bold/rounded.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body data-theme="dark">
+<aside id="side">
+  <div class="brand"><img src="logo.svg" alt="WhatsMyPC" class="logo-img" style="width:28px;height:28px;object-fit:contain;border-radius:6px;"><b>WhatsMyPC</b></div>
+  <nav id="nav"></nav>
+</aside>
+<main>
+  <header>
+    <button id="menu" class="icon" title="Menu"><i class="fi fi-rr-menu-burger"></i></button>
+    <div class="search">
+      <input id="q" placeholder="Search sections & settings (Ctrl+K)" autocomplete="off">
+      <div id="results"></div>
+    </div>
+    <span id="hpill" class="pill">…</span>
+    <button class="icon" id="bSpecs" title="Copy specs to clipboard"><i class="fi fi-rr-copy-alt"></i></button>
+    <button class="icon" id="bShot" title="Screenshot this window"><i class="fi fi-rr-camera"></i></button>
+    <button class="icon" id="bOverlay" title="Gaming overlay"><i class="fi fi-rr-gamepad"></i></button>
+    <button class="icon" id="bCompact" title="Compact mode"><i class="fi fi-rr-compress-alt"></i></button>
+    <button class="icon" id="bTheme" title="Light / dark"><i class="fi fi-rr-brightness"></i></button>
+  </header>
+  <section id="page"></section>
+</main>
+<div id="toasts"></div>
+<script src="app.js"></script>
+</body>
+</html>

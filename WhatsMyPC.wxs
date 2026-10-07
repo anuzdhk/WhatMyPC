@@ -1,0 +1,117 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="WhatsMyPC"
+           Manufacturer="WhatsMyPC"
+           Version="1.0.0.0"
+           UpgradeCode="E5813A22-3850-4F29-B101-729B1278C62A"
+           Scope="perUser">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="WhatsMyPCIcon" SourceFile="WhatsMyPC.ico" />
+    <Property Id="ARPPRODUCTICON" Value="WhatsMyPCIcon" />
+
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="ProgramsFolder" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="WhatsMyPC">
+          <Directory Id="StaticFolder" Name="static" />
+          <Directory Id="PsFolder" Name="ps" />
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="WhatsMyPC" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder" />
+
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="MainExecutable" Guid="84C3DA4C-6750-4107-B45F-53C4718C9D86">
+        <File Id="WhatsMyPCEXE" Source="WhatsMyPC.exe" KeyPath="yes">
+          <Shortcut Id="DesktopShortcut"
+                    Directory="DesktopFolder"
+                    Name="WhatsMyPC"
+                    Description="WhatsMyPC Hardware &amp; Telemetry Dashboard"
+                    WorkingDirectory="INSTALLFOLDER"
+                    Icon="WhatsMyPCIcon"
+                    Advertise="no" />
+          <Shortcut Id="StartMenuShortcut"
+                    Directory="ApplicationProgramsFolder"
+                    Name="WhatsMyPC"
+                    Description="WhatsMyPC Hardware &amp; Telemetry Dashboard"
+                    WorkingDirectory="INSTALLFOLDER"
+                    Icon="WhatsMyPCIcon"
+                    Advertise="no" />
+        </File>
+        <RemoveFolder Id="CleanUpStartMenu" Directory="ApplicationProgramsFolder" On="uninstall" />
+        <RemoveFolder Id="CleanUpInstallFolder" Directory="INSTALLFOLDER" On="uninstall" />
+      </Component>
+
+      <Component Id="IconFile" Guid="738F7506-69FD-4A73-BE94-0E3BEAE654BE">
+        <File Source="WhatsMyPC.ico" KeyPath="yes" />
+      </Component>
+      <Component Id="WebView2LoaderDll" Guid="BEAEFBC0-2D75-4089-8260-84E3F786C153">
+        <File Source="WebView2Loader.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="LibGccDll" Guid="C997BD1C-8451-46DE-94C3-E6FDF44F27B8">
+        <File Source="libgcc_s_seh-1.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="LibPthreadDll" Guid="EE8849E2-7472-463F-A9F7-41484E42B434">
+        <File Source="libwinpthread-1.dll" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="StaticFiles" Directory="StaticFolder">
+      <Component Id="AppCss" Guid="2739DB6B-C82D-4340-9CE4-6E38BF114C47">
+        <File Source="static\app.css" KeyPath="yes" />
+      </Component>
+      <Component Id="AppJs" Guid="98717834-4509-4E68-9A8E-5201BC8D1244">
+        <File Source="static\app.js" KeyPath="yes" />
+      </Component>
+      <Component Id="IndexHtml" Guid="3E46714E-0A33-41CE-AB66-70808B79B535">
+        <File Source="static\index.html" KeyPath="yes" />
+      </Component>
+      <Component Id="LogoSvg" Guid="3635AA7D-E4B7-4FEF-94B6-61D6C408AEBC">
+        <File Source="static\logo.svg" KeyPath="yes" />
+      </Component>
+      <Component Id="OverlayHtml" Guid="BE1A22C4-82D5-429C-B30F-E966B24ED014">
+        <File Source="static\overlay.html" KeyPath="yes" />
+      </Component>
+      <Component Id="StaticIco" Guid="DA20718A-32F1-42DF-A12B-C3E94E510114">
+        <File Source="static\WhatsMyPC.ico" KeyPath="yes" />
+      </Component>
+      <Component Id="RemoveStaticFolder" Guid="6A19277E-97F7-4A44-84EC-D269D1305411">
+        <RemoveFolder Id="CleanUpStaticFolder" Directory="StaticFolder" On="uninstall" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="PsFiles" Directory="PsFolder">
+      <Component Id="InfoPs1" Guid="55331E12-F5FB-4F18-A7F7-D8B6327CD926">
+        <File Source="ps\info.ps1" KeyPath="yes" />
+      </Component>
+      <Component Id="LivePs1" Guid="1FBDF7A4-5C32-4740-9E11-92D9B348256E">
+        <File Source="ps\live.ps1" KeyPath="yes" />
+      </Component>
+      <Component Id="OntopPs1" Guid="BE51FF5D-1383-490C-B7E7-548B9646BCF5">
+        <File Source="ps\ontop.ps1" KeyPath="yes" />
+      </Component>
+      <Component Id="ShotPs1" Guid="C19F0D90-E577-493B-B0B9-93C0C46B124C">
+        <File Source="ps\shot.ps1" KeyPath="yes" />
+      </Component>
+      <Component Id="TrayPs1" Guid="F962F74F-4DEE-4C2E-83B4-F7523F16A99A">
+        <File Source="ps\tray.ps1" KeyPath="yes" />
+      </Component>
+      <Component Id="RemovePsFolder" Guid="E64FDE61-0CDA-4835-AFB4-2BE1BC8E704D">
+        <RemoveFolder Id="CleanUpPsFolder" Directory="PsFolder" On="uninstall" />
+      </Component>
+    </ComponentGroup>
+
+    <Feature Id="MainFeature" Title="WhatsMyPC" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentGroupRef Id="StaticFiles" />
+      <ComponentGroupRef Id="PsFiles" />
+    </Feature>
+  </Package>
+</Wix>

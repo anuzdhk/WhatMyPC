@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WhatsMyPC Overlay</title>
+<style>
+  :root { --accent: #ff5500; --bg: rgba(13, 17, 23, 0.88); --text: #e6edf3; --muted: #8b949e; --border: rgba(255, 255, 255, 0.12); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Consolas, "Cascadia Code", "Segoe UI", monospace;
+    font-size: 13px;
+    padding: 12px;
+    user-select: none;
+    -webkit-app-region: drag;
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+  }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0;
+  }
+  .lbl { color: var(--muted); font-size: 11.5px; }
+  .val { font-weight: 600; }
+  .val.ok { color: #2ea043; }
+  .val.warn { color: #d29922; }
+  .val.bad { color: #f85149; }
+  .bar-bg {
+    width: 65px;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-left: 8px;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+  }
+  .right { display: flex; align-items: center; }
+</style>
+</head>
+<body>
+  <div class="title">
+    <span>WhatsMyPC Mini HUD</span>
+    <span id="fps">FPS: ~</span>
+  </div>
+  <div class="row">
+    <span class="lbl">CPU LOAD</span>
+    <div class="right">
+      <span class="val" id="cpu">0%</span>
+      <div class="bar-bg"><div class="bar-fill" id="cpu-bar"></div></div>
+    </div>
+  </div>
+  <div class="row">
+    <span class="lbl">CPU TEMP</span>
+    <span class="val" id="cpuTemp">-- °C</span>
+  </div>
+  <div class="row">
+    <span class="lbl">RAM LOAD</span>
+    <div class="right">
+      <span class="val" id="ram">0%</span>
+      <div class="bar-bg"><div class="bar-fill" id="ram-bar"></div></div>
+    </div>
+  </div>
+  <div class="row">
+    <span class="lbl">GPU LOAD</span>
+    <div class="right">
+      <span class="val" id="gpu">0%</span>
+      <div class="bar-bg"><div class="bar-fill" id="gpu-bar"></div></div>
+    </div>
+  </div>
+  <div class="row">
+    <span class="lbl">GPU TEMP</span>
+    <span class="val" id="gpuTemp">-- °C</span>
+  </div>
+  <div class="row">
+    <span class="lbl">NET SPEED</span>
+    <span class="val" id="net">0 / 0 KB/s</span>
+  </div>
+
+<script>
+  let frames = 0, lastTime = performance.now();
+  function countFps(now) {
+    frames++;
+    if (now - lastTime >= 1000) {
+      document.getElementById('fps').textContent = 'FPS: ' + frames;
+      frames = 0;
+      lastTime = now;
+    }
+    requestAnimationFrame(countFps);
+  }
+  requestAnimationFrame(countFps);
+
+  function fmtBytes(b) {
+    if (!b || b < 0) return '0 B/s';
+    if (b >= 1048576) return (b / 1048576).toFixed(1) + ' MB/s';
+    return (b / 1024).toFixed(0) + ' KB/s';
+  }
+
+  async function poll() {
+    try {
+      const res = await fetch('/api/summary');
+      if (res.ok) {
+        const d = await res.json();
+        const cpuVal = Math.round(d.cpu || 0);
+        document.getElementById('cpu').textContent = cpuVal + '%';
+        document.getElementById('cpu-bar').style.width = Math.min(100, cpuVal) + '%';
+        if (d.cpuT != null) document.getElementById('cpuTemp').textContent = Math.round(d.cpuT) + ' °C';
+
+        const ramVal = Math.round(d.ram || 0);
+        document.getElementById('ram').textContent = ramVal + '%';
+        document.getElementById('ram-bar').style.width = Math.min(100, ramVal) + '%';
+
+        const gpuVal = d.gpu != null ? Math.round(d.gpu) : 0;
+        document.getElementById('gpu').textContent = d.gpu != null ? gpuVal + '%' : 'N/A';
+        document.getElementById('gpu-bar').style.width = Math.min(100, gpuVal) + '%';
+        if (d.gpuT != null) document.getElementById('gpuTemp').textContent = Math.round(d.gpuT) + ' °C';
+
+        document.getElementById('net').textContent = `↓${fmtBytes(d.rx)} ↑${fmtBytes(d.tx)}`;
+      }
+    } catch (e) {}
+    setTimeout(poll, 1000);
+  }
+  poll();
+</script>
+</body>
+</html>
