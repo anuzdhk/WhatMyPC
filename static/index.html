@@ -3,36 +3,110 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
 <title>WhatsMyPC</title>
 <link rel="icon" type="image/svg+xml" href="logo.svg">
 <link rel="alternate icon" href="WhatsMyPC.ico">
-<!-- UIcons Rounded Icon Library by Flaticon -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons@3.3.1/css/regular/rounded.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons@3.3.1/css/bold/rounded.css">
 <link rel="stylesheet" href="app.css">
+<script>
+  // Apply theme before first paint to avoid a flash
+  try {
+    const g = k => JSON.parse(localStorage.getItem('wmpc.' + k));
+    const m = g('theme') || 'dark';
+    const t = m === 'system' ? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') : m;
+    document.documentElement.dataset.theme = t;
+    const a = g('accent'); if (a) document.documentElement.style.setProperty('--accent', a);
+    if (g('compact') === true) document.documentElement.classList.add('compact');
+  } catch (e) { document.documentElement.dataset.theme = 'dark'; }
+</script>
 </head>
-<body data-theme="dark">
-<aside id="side">
-  <div class="brand"><img src="logo.svg" alt="WhatsMyPC" class="logo-img" style="width:28px;height:28px;object-fit:contain;border-radius:6px;"><b>WhatsMyPC</b></div>
-  <nav id="nav"></nav>
-</aside>
-<main>
-  <header>
-    <button id="menu" class="icon" title="Menu"><i class="fi fi-rr-menu-burger"></i></button>
-    <div class="search">
-      <input id="q" placeholder="Search sections & settings (Ctrl+K)" autocomplete="off">
-      <div id="results"></div>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-overview" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="9" rx="2"/><rect x="13.5" y="3" width="7.5" height="5.5" rx="2"/><rect x="13.5" y="11.5" width="7.5" height="9.5" rx="2"/><rect x="3" y="15" width="7.5" height="6" rx="2"/></symbol>
+    <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2.5"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></symbol>
+    <symbol id="i-memory" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="10" rx="1.5"/><path d="M6.5 9.5v3M10 9.5v3M14 9.5v3M17.5 9.5v3M5 16v3M9 16v3M15 16v3M19 16v3"/></symbol>
+    <symbol id="i-gpu" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="12" rx="2"/><circle cx="9" cy="11" r="3"/><path d="M15 9h3.5M15 13h3.5M5 17v3M9 17v3"/></symbol>
+    <symbol id="i-drive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 14h18"/><circle cx="16.5" cy="17" r=".6" fill="currentColor"/><circle cx="7" cy="17" r=".6" fill="currentColor"/></symbol>
+    <symbol id="i-network" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3Z"/></symbol>
+    <symbol id="i-battery" viewBox="0 0 24 24"><rect x="2.5" y="7" width="17" height="10" rx="2"/><path d="M22 10.5v3"/><path d="M11.5 9l-2 3h3l-2 3"/></symbol>
+    <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2.5"/><rect x="7" y="7" width="5" height="5" rx="1"/><path d="M15 7h2.5M15 10h2.5M7 15.5h10.5M7 18h4"/></symbol>
+    <symbol id="i-devices" viewBox="0 0 24 24"><rect x="2" y="4" width="14" height="10" rx="1.5"/><path d="M6 18h6M9 14v4"/><rect x="18" y="8" width="4" height="10" rx="1.2"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.2 7.5 9.5 4.3-1.3 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.8 12.2 2.2 2.2 4.3-4.6"/></symbol>
+    <symbol id="i-update" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.6-4.5M4 13a8 8 0 0 0 14.6 4.5"/><path d="M5 3v4h4M19 21v-4h-4"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12.5 9 5 9-5M3 16.5l9 5 9-5"/></symbol>
+    <symbol id="i-package" viewBox="0 0 24 24"><path d="m12 2.8 8.5 4.7v9L12 21.2l-8.5-4.7v-9L12 2.8Z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9.2M7.8 5.2l8.5 4.7"/></symbol>
+    <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4.5M12 17h.01"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8.5 6H21M8.5 12H21M8.5 18H21"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v5M15 2v5"/><path d="M6 7h12v4a6 6 0 0 1-12 0V7Z"/><path d="M12 17v5"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M3.5 17a9 9 0 1 1 17 0"/><path d="m12 14 4.5-5"/><circle cx="12" cy="14" r="1.6"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3.5 13.9 9 19.5 11l-5.6 2L12 18.5 10.1 13 4.5 11l5.6-2L12 3.5Z"/><path d="M19 3v4M17 5h4M5 17v4M3 19h4"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9Z"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></symbol>
+    <symbol id="i-report" viewBox="0 0 24 24"><path d="M14 2.5H6.5a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V8L14 2.5Z"/><path d="M14 2.5V8h5.5M8.5 13h7M8.5 17h5"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.5-4.5"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="12.5" height="12.5" rx="2.5"/><path d="M15.5 8.5V5.5a2.5 2.5 0 0 0-2.5-2.5H5.5A2.5 2.5 0 0 0 3 5.5V13a2.5 2.5 0 0 0 2.5 2.5h3"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h2l1.6-2.2h5.8L16.5 6h2A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-9Z"/><circle cx="12" cy="13" r="3.6"/></symbol>
+    <symbol id="i-gamepad" viewBox="0 0 24 24"><path d="M7 7h10a5 5 0 0 1 4.9 6l-.7 3.4a2.6 2.6 0 0 1-4.6 1L15 15.5H9l-1.6 1.9a2.6 2.6 0 0 1-4.6-1L2.1 13A5 5 0 0 1 7 7Z"/><path d="M7.5 10v3M6 11.5h3"/><circle cx="16" cy="10.5" r=".7" fill="currentColor"/><circle cx="17.5" cy="12.5" r=".7" fill="currentColor"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11Z"/></symbol>
+    <symbol id="i-sidebar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9.5 4v16"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10.5l5 5 5-5M4 20h16"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.8v14.4a1 1 0 0 0 1.5.9l11.3-7.2a1 1 0 0 0 0-1.8L8.5 3.9A1 1 0 0 0 7 4.8Z"/></symbol>
+    <symbol id="i-temp" viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0Z"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2.5 4.5 13.5H12l-1 8 8.5-11H12l1-8Z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5h.01"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7L20 8.5"/><path d="M20 3.5v5h-5"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6 6.5l1 13a1.5 1.5 0 0 0 1.5 1.4h7a1.5 1.5 0 0 0 1.5-1.4l1-13"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2.5" y="3.5" width="19" height="13" rx="2"/><path d="M8 20.5h8M12 16.5v4"/></symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.6 16a5 5 0 0 1 6.8 0"/><circle cx="12" cy="19.3" r=".9" fill="currentColor"/></symbol>
+    <symbol id="i-ethernet" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="13" rx="2"/><path d="M8 17v3h8v-3M8.5 8v3M12 8v3M15.5 8v3"/></symbol>
+    <symbol id="i-command" viewBox="0 0 24 24"><path d="M9 6v12M15 6v12M6 9h12M6 15h12"/><path d="M9 6a3 3 0 1 0-3 3M15 6a3 3 0 1 1 3 3M9 18a3 3 0 1 1-3-3M15 18a3 3 0 1 0 3-3"/></symbol>
+  </defs>
+</svg>
+
+<div id="app">
+  <aside id="side" aria-label="Main navigation">
+    <a class="brand" href="#/overview">
+      <img src="logo.svg" alt="" width="26" height="26">
+      <span>WhatsMyPC</span>
+    </a>
+    <nav id="nav"></nav>
+    <div class="side-foot" id="sideFoot">
+      <div class="mini"><span>CPU</span><div class="mbar"><i id="sfCpu"></i></div><b id="sfCpuV">–</b></div>
+      <div class="mini"><span>RAM</span><div class="mbar"><i id="sfRam"></i></div><b id="sfRamV">–</b></div>
     </div>
-    <span id="hpill" class="pill">…</span>
-    <button class="icon" id="bSpecs" title="Copy specs to clipboard"><i class="fi fi-rr-copy-alt"></i></button>
-    <button class="icon" id="bShot" title="Screenshot this window"><i class="fi fi-rr-camera"></i></button>
-    <button class="icon" id="bOverlay" title="Gaming overlay"><i class="fi fi-rr-gamepad"></i></button>
-    <button class="icon" id="bCompact" title="Compact mode"><i class="fi fi-rr-compress-alt"></i></button>
-    <button class="icon" id="bTheme" title="Light / dark"><i class="fi fi-rr-brightness"></i></button>
-  </header>
-  <section id="page"></section>
-</main>
-<div id="toasts"></div>
+  </aside>
+  <div id="main">
+    <header id="top">
+      <button class="ib" id="bSide" aria-label="Toggle sidebar" title="Toggle sidebar"><svg><use href="#i-sidebar"/></svg></button>
+      <div class="crumbs"><span id="crumbGroup"></span><svg class="chev"><use href="#i-chev"/></svg><b id="crumbTitle"></b></div>
+      <button class="cmdk" id="bCmd" aria-label="Search and commands">
+        <svg><use href="#i-search"/></svg><span>Search pages &amp; actions…</span><kbd>Ctrl K</kbd>
+      </button>
+      <div class="top-actions">
+        <a class="health" id="health" href="#/overview" title="System health"><i></i><span>…</span></a>
+        <button class="ib" id="bSpecs" title="Copy specs (Ctrl+C)" aria-label="Copy specs"><svg><use href="#i-copy"/></svg></button>
+        <button class="ib" id="bShot" title="Screenshot (Ctrl+S)" aria-label="Screenshot"><svg><use href="#i-camera"/></svg></button>
+        <button class="ib" id="bOverlay" title="Gaming overlay (Ctrl+O)" aria-label="Gaming overlay"><svg><use href="#i-gamepad"/></svg></button>
+        <button class="ib" id="bTheme" title="Toggle theme" aria-label="Toggle theme"><svg><use href="#i-moon"/></svg></button>
+      </div>
+    </header>
+    <div id="offline" class="offline" hidden>Lost connection to the WhatsMyPC service. Retrying…</div>
+    <main id="page" tabindex="-1"></main>
+  </div>
+</div>
+
+<div id="toasts" aria-live="polite"></div>
+<div id="layer"></div>
 <script src="app.js"></script>
 </body>
 </html>

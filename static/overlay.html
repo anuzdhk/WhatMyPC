@@ -4,143 +4,67 @@
 <meta charset="utf-8">
 <title>WhatsMyPC Overlay</title>
 <style>
-  :root { --accent: #ff5500; --bg: rgba(13, 17, 23, 0.88); --text: #e6edf3; --muted: #8b949e; --border: rgba(255, 255, 255, 0.12); }
+  :root { --accent: #ff5a1f; --ok: #2fbf71; --warn: #f0a92c; --bad: #f0525a; --t1: #eceef3; --t3: #7d8697; --track: rgba(255,255,255,.09); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: Consolas, "Cascadia Code", "Segoe UI", monospace;
-    font-size: 13px;
-    padding: 12px;
-    user-select: none;
-    -webkit-app-region: drag;
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
+    background: rgba(11, 13, 18, .9); color: var(--t1);
+    font: 12px/1.3 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    padding: 12px 14px; user-select: none; -webkit-app-region: drag; overflow: hidden;
+    border: 1px solid rgba(255,255,255,.08); border-radius: 12px;
+    font-variant-numeric: tabular-nums;
   }
-  .title {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 4px;
-  }
-  .row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 5px 0;
-  }
-  .lbl { color: var(--muted); font-size: 11.5px; }
-  .val { font-weight: 600; }
-  .val.ok { color: #2ea043; }
-  .val.warn { color: #d29922; }
-  .val.bad { color: #f85149; }
-  .bar-bg {
-    width: 65px;
-    height: 6px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-left: 8px;
-  }
-  .bar-fill {
-    height: 100%;
-    background: var(--accent);
-    width: 0%;
-  }
-  .right { display: flex; align-items: center; }
+  header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  header img { width: 16px; height: 16px; border-radius: 4px; }
+  header b { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+  header span { margin-left: auto; color: var(--t3); font-size: 11px; }
+  .m { display: grid; grid-template-columns: 34px 1fr 52px; align-items: center; gap: 10px; margin: 7px 0; }
+  .m > span { color: var(--t3); font-size: 10.5px; font-weight: 700; letter-spacing: .08em; }
+  .m > b { text-align: right; font-size: 14px; font-weight: 600; }
+  .m > b small { display: block; color: var(--t3); font-size: 10px; font-weight: 500; }
+  .bar { height: 6px; border-radius: 6px; background: var(--track); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; border-radius: 6px; background: var(--c, var(--accent)); transition: width .5s cubic-bezier(.2,.7,.2,1), background .3s; }
+  .net { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 9px; border-top: 1px solid rgba(255,255,255,.08); color: var(--t3); }
+  .net b { color: var(--t1); font-weight: 600; margin-left: 4px; }
+  .off { opacity: .45; }
 </style>
 </head>
 <body>
-  <div class="title">
-    <span>WhatsMyPC Mini HUD</span>
-    <span id="fps">FPS: ~</span>
-  </div>
-  <div class="row">
-    <span class="lbl">CPU LOAD</span>
-    <div class="right">
-      <span class="val" id="cpu">0%</span>
-      <div class="bar-bg"><div class="bar-fill" id="cpu-bar"></div></div>
-    </div>
-  </div>
-  <div class="row">
-    <span class="lbl">CPU TEMP</span>
-    <span class="val" id="cpuTemp">-- °C</span>
-  </div>
-  <div class="row">
-    <span class="lbl">RAM LOAD</span>
-    <div class="right">
-      <span class="val" id="ram">0%</span>
-      <div class="bar-bg"><div class="bar-fill" id="ram-bar"></div></div>
-    </div>
-  </div>
-  <div class="row">
-    <span class="lbl">GPU LOAD</span>
-    <div class="right">
-      <span class="val" id="gpu">0%</span>
-      <div class="bar-bg"><div class="bar-fill" id="gpu-bar"></div></div>
-    </div>
-  </div>
-  <div class="row">
-    <span class="lbl">GPU TEMP</span>
-    <span class="val" id="gpuTemp">-- °C</span>
-  </div>
-  <div class="row">
-    <span class="lbl">NET SPEED</span>
-    <span class="val" id="net">0 / 0 KB/s</span>
-  </div>
-
+  <header><img src="logo.svg" alt=""><b>WhatsMyPC</b><span id="clock">--:--</span></header>
+  <div class="m"><span>CPU</span><div class="bar"><i id="cpuB"></i></div><b id="cpu">–<small id="cpuT"></small></b></div>
+  <div class="m"><span>GPU</span><div class="bar"><i id="gpuB" style="--c:#1fc3a5"></i></div><b id="gpu">–<small id="gpuT"></small></b></div>
+  <div class="m"><span>RAM</span><div class="bar"><i id="ramB" style="--c:#8b7cf6"></i></div><b id="ram">–</b></div>
+  <div class="m"><span>DISK</span><div class="bar"><i id="dskB" style="--c:#4c96ff"></i></div><b id="dsk">–</b></div>
+  <div class="net"><span>↓<b id="rx">–</b></span><span>↑<b id="tx">–</b></span></div>
 <script>
-  let frames = 0, lastTime = performance.now();
-  function countFps(now) {
-    frames++;
-    if (now - lastTime >= 1000) {
-      document.getElementById('fps').textContent = 'FPS: ' + frames;
-      frames = 0;
-      lastTime = now;
-    }
-    requestAnimationFrame(countFps);
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const unit = (() => { try { return JSON.parse(localStorage.getItem('wmpc.unit')) || 'C'; } catch (e) { return 'C'; } })();
+  const temp = c => c == null ? '' : unit === 'F' ? Math.round(c * 9 / 5 + 32) + '°F' : Math.round(c) + '°C';
+  const rate = b => !b ? '0 KB/s' : b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB/s' : Math.round(b / 1024) + ' KB/s';
+  const col = p => p >= 90 ? 'var(--bad)' : p >= 75 ? 'var(--warn)' : '';
+  function set(id, v, t) {
+    const n = v == null ? null : Math.round(v);
+    const b = $(id + 'B'), el = $(id);
+    el.firstChild.nodeValue = n == null ? 'N/A' : n + '%';
+    el.classList.toggle('off', n == null);
+    b.style.width = (n == null ? 0 : Math.min(100, n)) + '%';
+    const c = col(n || 0); c ? b.style.setProperty('background', c) : b.style.removeProperty('background');
+    if (t !== undefined) $(id + 'T').textContent = temp(t);
   }
-  requestAnimationFrame(countFps);
-
-  function fmtBytes(b) {
-    if (!b || b < 0) return '0 B/s';
-    if (b >= 1048576) return (b / 1048576).toFixed(1) + ' MB/s';
-    return (b / 1024).toFixed(0) + ' KB/s';
-  }
-
+  function tick() { $('clock').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
   async function poll() {
     try {
-      const res = await fetch('/api/summary');
-      if (res.ok) {
-        const d = await res.json();
-        const cpuVal = Math.round(d.cpu || 0);
-        document.getElementById('cpu').textContent = cpuVal + '%';
-        document.getElementById('cpu-bar').style.width = Math.min(100, cpuVal) + '%';
-        if (d.cpuT != null) document.getElementById('cpuTemp').textContent = Math.round(d.cpuT) + ' °C';
-
-        const ramVal = Math.round(d.ram || 0);
-        document.getElementById('ram').textContent = ramVal + '%';
-        document.getElementById('ram-bar').style.width = Math.min(100, ramVal) + '%';
-
-        const gpuVal = d.gpu != null ? Math.round(d.gpu) : 0;
-        document.getElementById('gpu').textContent = d.gpu != null ? gpuVal + '%' : 'N/A';
-        document.getElementById('gpu-bar').style.width = Math.min(100, gpuVal) + '%';
-        if (d.gpuT != null) document.getElementById('gpuTemp').textContent = Math.round(d.gpuT) + ' °C';
-
-        document.getElementById('net').textContent = `↓${fmtBytes(d.rx)} ↑${fmtBytes(d.tx)}`;
+      const r = await fetch('/api/summary');
+      if (r.ok) {
+        const d = await r.json();
+        set('cpu', d.cpu, d.cpuT); set('gpu', d.gpu, d.gpuT); set('ram', d.ram); set('dsk', d.disk);
+        $('rx').textContent = rate(d.rx); $('tx').textContent = rate(d.tx);
       }
     } catch (e) {}
     setTimeout(poll, 1000);
   }
-  poll();
+  tick(); setInterval(tick, 10000); poll();
 </script>
 </body>
 </html>

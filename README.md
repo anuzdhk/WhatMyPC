@@ -35,24 +35,34 @@ Unlike heavy Electron-based or web-wrapped tools, **WhatsMyPC** is compiled into
 
 ---
 
-## 🌟 Key Features
+## 🌟 Key Features (v2.0)
 
 ### 🖥️ 1. Hardware & System Telemetry
-- **Overview Dashboard**: High-level health index, OS edition/build, hostname, uptime, and last boot timestamp.
-- **CPU Deep Dive**: Model, core/thread count, base/boost frequency, architecture, per-core utilization meters, real-time frequency, and top processes.
-- **Memory & Paging**: Live physical and virtual swap memory tracking, RAM speed, form factor (DDR4 / DDR5), slot configurations, and channel bandwidth.
-- **GPU Diagnostics**: Real-time VRAM allocation, GPU core load, temperature, driver versions, and multi-GPU enumeration (Dedicated & Integrated).
-- **Storage & Drive Health**: Drive type classification (NVMe, SSD, HDD), partitioned usage, live I/O activity, and S.M.A.R.T. health status.
-- **Network Stats**: Active adapters (Wi-Fi, Ethernet), local IPv4/IPv6, MAC, gateway, DNS, live throughput charts, and ping latency.
-- **Battery & Power (Laptops)**: Charge level, charging rate, estimated battery health (designed vs. current capacity), and cycle count.
+- **Overview**: Animated health score, device identity (CPU, GPU, RAM, storage, Windows build), live CPU / memory / GPU / disk tiles with sparklines, network chart, drive space and top processes.
+- **Processor**: Live load ring and 2-minute history chart with hover read-outs, per-core heat tiles, cache/socket specs and session peak.
+- **Memory**: Usage ring, commit charge, installed modules per slot (including empty slots available for upgrade).
+- **Graphics**: Every adapter with vendor, dedicated/integrated, VRAM, driver version and age, active display mode.
+- **Storage**: Live read/write chart, active time, drive health, wear/temperature (when available) and volume usage.
+- **Network**: Live throughput chart, session data totals, adapter details with one-click copy of IP / MAC / DNS, built-in speed test with history.
+- **Battery**: Charge, status, wear-based health rating and capacity.
 
-### 🛠️ 2. Built-in Power Tools
-- **1-Click Clean Specs Copier**: Instantly copies a clean, human-readable summary (CPU, RAM, OS, Storage, GPU) to the clipboard for Discord, Reddit, or tech support.
-- **Always-on-Top Gaming Overlay**: Floating mini HUD displaying current FPS, CPU/GPU load, and thermals while gaming or running intensive workloads.
-- **Instant Screenshot Capture**: Capture clean, high-resolution snapshots of your hardware overview directly to your clipboard or file.
-- **Built-in Speed & Latency Test**: Verify your network response time without opening third-party web trackers.
-- **Smart Spotlight Search (`Ctrl + K`)**: Jump directly to any hardware section, disk, or setting instantly.
-- **Customization**: Dark / Light theme toggle with high-contrast Orange accent palette and rounded Flaticon UIcons.
+### 🛡️ 2. System Insight
+- **Security score**: Defender, tamper protection, definitions age, firewall profiles, UAC, Secure Boot and BitLocker as a pass / review / at-risk checklist.
+- **Windows Update**: Pending updates (security flagged) and recently installed KB patches.
+- **Reliability**: 60-day timeline of app crashes, hangs, blue screens and unexpected shutdowns with filters.
+- **Drivers, Installed apps, Startup, Devices**: Searchable, sortable tables with filters and CSV export.
+
+### 🛠️ 3. Tools
+- **Process manager**: Live, sortable, searchable; End task with a safety warning for Windows system processes.
+- **Connections**: Listening ports and established connections per process, with "reachable from network" count.
+- **Benchmark**: Multi-core CPU and disk read/write, with saved history and comparison to your best run.
+- **Cleanup**: Temp and cache cleaner (always confirmed first) with freed-space history.
+- **Alerts**: Configurable CPU / memory / drive space / temperature thresholds with sustained-duration rules.
+- **Report & export**: Copy specs, or download a full HTML report or raw JSON.
+- **Command palette (`Ctrl + K`)**: Jump to any page or run any action.
+- **Gaming overlay**: Compact always-on-top HUD for CPU, GPU, RAM, disk, temperatures and network.
+- **Personalisation**: Dark / Light / System theme, 7 accent colours, compact sidebar, refresh rate and °C / °F.
+- **Fully offline**: No CDN or web fonts; icons are bundled inline.
 
 ---
 
@@ -77,6 +87,7 @@ No installation needed! Download `WhatsMyPC-v1.0.0-Portable.zip`, unpack the arc
 | <kbd>Ctrl</kbd> + <kbd>C</kbd> | Copy Essential Specs to Clipboard |
 | <kbd>Ctrl</kbd> + <kbd>S</kbd> | Capture Screenshot of Dashboard |
 | <kbd>Ctrl</kbd> + <kbd>O</kbd> | Toggle Floating Gaming Overlay |
+| <kbd>Ctrl</kbd> + <kbd>B</kbd> | Toggle Compact Sidebar |
 | <kbd>Esc</kbd> | Close Modals / Clear Search |
 
 ---
