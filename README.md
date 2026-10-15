@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="logo/logosvg.svg" alt="WhatsMyPC Logo" width="120" height="120" />
+  <img src="static/logo.svg" alt="WhatsMyPC Logo" width="120" height="120" />
 
   # WhatsMyPC
 

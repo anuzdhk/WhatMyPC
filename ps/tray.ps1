@@ -4,21 +4,22 @@ Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 $base = "http://127.0.0.1:$Port"
 $wc = New-Object Net.WebClient
 $wc.Encoding = [Text.Encoding]::UTF8
-$wc.Headers.Add('X-PCpedia', '1')
+$wc.Headers.Add('X-WhatsMyPC', '1')
 
 function Post($p) { try { $wc.UploadString("$base$p", 'POST', '') | Out-Null } catch {} }
 
-# Icon drawn at runtime (no binary assets)
+# App icon, falling back to one drawn at runtime
 $bmp = New-Object Drawing.Bitmap 32, 32
 $g = [Drawing.Graphics]::FromImage($bmp)
 $g.SmoothingMode = 'AntiAlias'
-$g.FillEllipse((New-Object Drawing.SolidBrush ([Drawing.Color]::FromArgb(56, 139, 253))), 1, 1, 30, 30)
+$g.FillEllipse((New-Object Drawing.SolidBrush ([Drawing.Color]::FromArgb(255, 85, 0))), 1, 1, 30, 30)
 $f = New-Object Drawing.Font 'Segoe UI', 15, ([Drawing.FontStyle]::Bold), ([Drawing.GraphicsUnit]::Pixel)
-$g.DrawString('P', $f, [Drawing.Brushes]::White, 8, 4)
-$icon = [Drawing.Icon]::FromHandle($bmp.GetHicon())
+$g.DrawString('W', $f, [Drawing.Brushes]::White, 8, 4)
+$ico = Join-Path $PSScriptRoot '..\WhatsMyPC.ico'
+$icon = if (Test-Path $ico) { New-Object Drawing.Icon $ico, 32, 32 } else { [Drawing.Icon]::FromHandle($bmp.GetHicon()) }
 
 $ni = New-Object Windows.Forms.NotifyIcon
-$ni.Icon = $icon; $ni.Text = 'PCpedia'; $ni.Visible = $true
+$ni.Icon = $icon; $ni.Text = 'WhatsMyPC'; $ni.Visible = $true
 
 # Mini popup
 $form = New-Object Windows.Forms.Form
@@ -39,7 +40,7 @@ function Update-Popup($s) {
     if (-not $s) { return }
     $gpu = if ($s.gpu -ne $null) { "$([int]$s.gpu)%" } else { 'n/a' }
     $ct = if ($s.cpuT -ne $null) { "  $([int]$s.cpuT) C" } else { '' }
-    $lbl.Text = "PCpedia  -  $($s.health.level) ($($s.health.score))`r`n`r`nCPU   $([int]$s.cpu)%$ct`r`nRAM   $([int]$s.ram)%`r`nGPU   $gpu`r`nDisk  $([int]$s.disk)% busy`r`nDown  $(Fmt $s.rx)`r`nUp    $(Fmt $s.tx)"
+    $lbl.Text = "WhatsMyPC  -  $($s.health.level) ($($s.health.score))`r`n`r`nCPU   $([int]$s.cpu)%$ct`r`nRAM   $([int]$s.ram)%`r`nGPU   $gpu`r`nDisk  $([int]$s.disk)% busy`r`nDown  $(Fmt $s.rx)`r`nUp    $(Fmt $s.tx)"
 }
 
 $fails = 0
@@ -49,7 +50,7 @@ $timer.Add_Tick({
     $s = Fetch
     if (-not $s) { $script:fails++; if ($script:fails -ge 4) { $ni.Visible = $false; [Windows.Forms.Application]::Exit() }; return }
     $script:fails = 0
-    $ni.Text = ("PCpedia  CPU {0}%  RAM {1}%" -f [int]$s.cpu, [int]$s.ram)
+    $ni.Text = ("WhatsMyPC  CPU {0}%  RAM {1}%" -f [int]$s.cpu, [int]$s.ram)
     if ($form.Visible) { Update-Popup $s }
     foreach ($a in @($s.pending)) { if ($a) { $ni.ShowBalloonTip(6000, $a.title, $a.text, 'Warning') } }
 })
@@ -67,7 +68,7 @@ $ni.Add_MouseClick({
 $ni.Add_DoubleClick({ Open-Dash })
 
 $menu = New-Object Windows.Forms.ContextMenuStrip
-$menu.Items.Add('Open PCpedia', $null, { Open-Dash }) | Out-Null
+$menu.Items.Add('Open WhatsMyPC', $null, { Open-Dash }) | Out-Null
 $menu.Items.Add('Gaming overlay', $null, { Post '/api/overlay' }) | Out-Null
 $menu.Items.Add('-') | Out-Null
 $menu.Items.Add('Quit', $null, { Post '/api/quit'; $ni.Visible = $false; [Windows.Forms.Application]::Exit() }) | Out-Null

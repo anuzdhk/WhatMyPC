@@ -37,6 +37,14 @@ function el(tag, cls, text) {
   return d;
 }
 
+// Strings from the OS (process names, software, event text, file paths) end up in innerHTML, so escape them on arrival.
+const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const esc = s => String(s).replace(/[&<>"']/g, c => ESC[c]);
+async function jfetch(url, opts) {
+  const r = await fetch(url, opts);
+  return { ok: r.ok, text: () => r.text(), json: async () => JSON.parse(await r.text(), (k, v) => typeof v === 'string' ? esc(v) : v) };
+}
+
 function fmtBytes(b, decimals = 1) {
   if (b == null || isNaN(b) || b === 0) return '0 B';
   const k = 1024, dm = decimals < 0 ? 0 : decimals;
@@ -135,7 +143,7 @@ function drawMiniChart(canvas, points, color = '#ff5500', maxVal = 100) {
 // Main Polling Loop
 async function pollLiveData() {
   try {
-    const res = await fetch('/api/live');
+    const res = await jfetch('/api/live');
     if (res.ok) {
       liveData = await res.json();
       updateHeaderStatus();
@@ -259,7 +267,7 @@ async function renderOverview(container) {
 
   // Fetch static host details
   try {
-    const sys = await (await fetch('/api/info/system')).json();
+    const sys = await (await jfetch('/api/info/system')).json();
     const box = document.getElementById('sys-info-banner');
     if (box && sys) {
       box.innerHTML = `
@@ -373,7 +381,7 @@ async function renderCpu(container) {
   `;
 
   try {
-    const cpus = await (await fetch('/api/info/cpu')).json();
+    const cpus = await (await jfetch('/api/info/cpu')).json();
     const c = Array.isArray(cpus) ? cpus[0] : cpus;
     const card = document.getElementById('cpu-static-card');
     if (card && c) {
@@ -456,7 +464,7 @@ async function renderMemory(container) {
   `;
 
   try {
-    const memInfo = await (await fetch('/api/info/memory')).json();
+    const memInfo = await (await jfetch('/api/info/memory')).json();
     const box = document.getElementById('mem-modules-box');
     if (box && memInfo) {
       const mods = memInfo.modules || [];
@@ -513,7 +521,7 @@ async function renderGpu(container) {
   `;
 
   try {
-    const gpus = await (await fetch('/api/info/gpu')).json();
+    const gpus = await (await jfetch('/api/info/gpu')).json();
     const gList = Array.isArray(gpus) ? gpus : [gpus];
     const box = document.getElementById('gpu-list');
     if (box) {
@@ -561,7 +569,7 @@ async function renderStorage(container) {
   `;
 
   try {
-    const st = await (await fetch('/api/info/storage')).json();
+    const st = await (await jfetch('/api/info/storage')).json();
     const pBox = document.getElementById('storage-physical-box');
     if (pBox && st.disks) {
       pBox.innerHTML = `
@@ -640,7 +648,7 @@ async function renderNetwork(container) {
   `;
 
   try {
-    const adapters = await (await fetch('/api/info/network')).json();
+    const adapters = await (await jfetch('/api/info/network')).json();
     const box = document.getElementById('net-adapters-box');
     if (box) {
       box.innerHTML = `
@@ -662,7 +670,7 @@ async function renderNetwork(container) {
       `;
     }
 
-    const u = await (await fetch('/api/usage')).json();
+    const u = await (await jfetch('/api/usage')).json();
     const uBox = document.getElementById('net-usage-box');
     if (uBox && u) {
       uBox.innerHTML = `
@@ -690,7 +698,7 @@ window.runSpeedtest = async function() {
   btn.disabled = true;
   st.textContent = 'Running test against edge CDN... (takes ~5s)';
   try {
-    const res = await (await fetch('/api/speedtest', { method: 'POST', headers: { 'X-WhatsMyPC': '1' } })).json();
+    const res = await (await jfetch('/api/speedtest', { method: 'POST', headers: { 'X-WhatsMyPC': '1' } })).json();
     if (res.error) st.textContent = 'Error: ' + res.error;
     else st.innerHTML = `<b style="color:var(--ok);"><i class="fi fi-rr-arrow-small-down"></i> ${res.downMbps} Mbps | <i class="fi fi-rr-arrow-small-up"></i> ${res.upMbps} Mbps</b>`;
   } catch (e) {
@@ -710,7 +718,7 @@ async function renderBattery(container) {
   `;
 
   try {
-    const b = await (await fetch('/api/info/battery')).json();
+    const b = await (await jfetch('/api/info/battery')).json();
     const inner = document.getElementById('battery-inner-content');
     if (inner) {
       if (!b.present) {
@@ -747,7 +755,7 @@ async function renderHardware(container) {
   `;
 
   try {
-    const hw = await (await fetch('/api/info/hardware')).json();
+    const hw = await (await jfetch('/api/info/hardware')).json();
     const box = document.getElementById('hw-box');
     if (box && hw) {
       box.innerHTML = `
@@ -796,7 +804,7 @@ async function renderDevices(container) {
   `;
 
   try {
-    const dev = await (await fetch('/api/info/devices')).json();
+    const dev = await (await jfetch('/api/info/devices')).json();
     const mBox = document.getElementById('dev-monitors-box');
     if (mBox && dev.monitors) {
       mBox.innerHTML = `
@@ -841,7 +849,7 @@ async function renderProcesses(container) {
   container.innerHTML = `
     <h1><i class="fi fi-rr-list-check" style="margin-right:8px;"></i>Process Manager</h1>
     <div class="row sp" style="margin-bottom:12px;">
-      <input type="text" id="proc-search" placeholder="Filter processes..." style="width:260px;" value="${procFilter}">
+      <input type="text" id="proc-search" placeholder="Filter processes..." style="width:260px;" value="${esc(procFilter)}">
       <div class="row">
         <span>Sort by:</span>
         <select id="proc-sort-sel">
@@ -874,7 +882,7 @@ async function renderProcesses(container) {
 
 async function refreshProcesses() {
   try {
-    procsData = await (await fetch('/api/procs')).json();
+    procsData = await (await jfetch('/api/procs')).json();
     updateProcessesTable();
   } catch (e) {}
 }
@@ -902,7 +910,7 @@ function updateProcessesTable() {
 window.killProc = async function(pid) {
   if (!confirm(`Are you sure you want to terminate process ${pid}?`)) return;
   try {
-    const res = await (await fetch('/api/kill', {
+    const res = await (await jfetch('/api/kill', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-WhatsMyPC': '1' },
       body: JSON.stringify({ pid })
@@ -926,7 +934,7 @@ async function renderSecurity(container) {
   `;
 
   try {
-    const sec = await (await fetch('/api/info/security')).json();
+    const sec = await (await jfetch('/api/info/security')).json();
     const box = document.getElementById('sec-box');
     if (box && sec) {
       box.innerHTML = `
@@ -986,7 +994,7 @@ async function renderStorageCleanup(container) {
   `;
 
   try {
-    const temps = await (await fetch('/api/cleanup')).json();
+    const temps = await (await jfetch('/api/cleanup')).json();
     const box = document.getElementById('cleaner-box');
     if (box && Array.isArray(temps)) {
       const tot = temps.reduce((a, b) => a + (b.size || 0), 0);
@@ -1002,7 +1010,7 @@ window.runCleanTemp = async function() {
   const btn = document.getElementById('btn-clean');
   btn.disabled = true;
   try {
-    const res = await (await fetch('/api/cleanup', { method: 'POST', headers: { 'X-WhatsMyPC': '1' } })).json();
+    const res = await (await jfetch('/api/cleanup', { method: 'POST', headers: { 'X-WhatsMyPC': '1' } })).json();
     toast(`Freed ${fmtBytes(res.freed)} of temporary disk space!`, 'ok');
     renderStorageCleanup(document.getElementById('page'));
   } catch (e) {
@@ -1016,7 +1024,7 @@ window.startFolderScan = async function() {
   const statEl = document.getElementById('scan-status');
   statEl.textContent = 'Starting scanner thread...';
   try {
-    const res = await (await fetch('/api/scan', {
+    const res = await (await jfetch('/api/scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-WhatsMyPC': '1' },
       body: JSON.stringify({ path })
@@ -1031,7 +1039,7 @@ window.startFolderScan = async function() {
 async function pollScanStatus() {
   if (!currentScanId) return;
   try {
-    const res = await (await fetch(`/api/scan?id=${currentScanId}`)).json();
+    const res = await (await jfetch(`/api/scan?id=${currentScanId}`)).json();
     const statEl = document.getElementById('scan-status');
     if (statEl) statEl.textContent = `Scanned ${res.files} files (${fmtBytes(res.total)})... State: ${res.state}`;
     
@@ -1075,7 +1083,7 @@ async function renderBenchmark(container) {
 
 async function loadBenchHistory() {
   try {
-    const hist = await (await fetch('/api/bench')).json();
+    const hist = await (await jfetch('/api/bench')).json();
     const tbody = document.querySelector('#bench-hist-table tbody');
     if (tbody) {
       tbody.innerHTML = (hist || []).map(b => `
@@ -1098,7 +1106,7 @@ window.runHardwareBenchmark = async function() {
   btn.disabled = true;
   msg.style.display = 'block';
   try {
-    const res = await (await fetch('/api/bench', { method: 'POST', headers: { 'X-WhatsMyPC': '1' } })).json();
+    const res = await (await jfetch('/api/bench', { method: 'POST', headers: { 'X-WhatsMyPC': '1' } })).json();
     toast(`Benchmark finished! Score: ${res.score}`, 'ok');
     loadBenchHistory();
   } catch (e) {
@@ -1126,7 +1134,7 @@ async function renderAlerts(container) {
   `;
 
   try {
-    const st = await (await fetch('/api/settings')).json();
+    const st = await (await jfetch('/api/settings')).json();
     const box = document.getElementById('alerts-config-box');
     if (box && st.alerts) {
       box.innerHTML = st.alerts.map(a => `
@@ -1137,7 +1145,7 @@ async function renderAlerts(container) {
       `).join('');
     }
 
-    const logs = await (await fetch('/api/alerts/log')).json();
+    const logs = await (await jfetch('/api/alerts/log')).json();
     const tbody = document.querySelector('#alerts-log-table tbody');
     if (tbody) {
       tbody.innerHTML = (logs || []).map(l => `
@@ -1175,7 +1183,7 @@ async function renderHistory(container) {
 
 window.loadHistoryRange = async function(range) {
   try {
-    const rows = await (await fetch(`/api/history?range=${range}`)).json();
+    const rows = await (await jfetch(`/api/history?range=${range}`)).json();
     const cCpu = document.getElementById('hist-canvas-cpu');
     if (cCpu && rows.length) {
       const cpuVals = rows.map(r => r[1]);
@@ -1200,7 +1208,7 @@ async function renderSoftware(container) {
   `;
 
   try {
-    const list = await (await fetch('/api/info/software')).json();
+    const list = await (await jfetch('/api/info/software')).json();
     const tbody = document.querySelector('#software-table tbody');
     if (tbody) {
       tbody.innerHTML = (list || []).map(s => `
@@ -1235,7 +1243,7 @@ async function renderStartup(container) {
   `;
 
   try {
-    const st = await (await fetch('/api/info/startup')).json();
+    const st = await (await jfetch('/api/info/startup')).json();
     const tbody = document.querySelector('#startup-items-table tbody');
     if (tbody && st.items) {
       tbody.innerHTML = st.items.map(i => `
@@ -1276,7 +1284,7 @@ async function renderDrivers(container) {
   `;
 
   try {
-    const drvs = await (await fetch('/api/info/drivers')).json();
+    const drvs = await (await jfetch('/api/info/drivers')).json();
     const tbody = document.querySelector('#drivers-table tbody');
     if (tbody) {
       tbody.innerHTML = (drvs || []).slice(0, 200).map(d => `
@@ -1303,7 +1311,7 @@ async function renderEvents(container) {
   `;
 
   try {
-    const evs = await (await fetch('/api/info/events')).json();
+    const evs = await (await jfetch('/api/info/events')).json();
     const tbody = document.querySelector('#events-table tbody');
     if (tbody) {
       tbody.innerHTML = (evs || []).map(e => `
@@ -1412,7 +1420,7 @@ window.saveAppSettings = async function() {
 function initToolbar() {
   document.getElementById('bSpecs').onclick = async () => {
     try {
-      const res = await (await fetch('/api/specs')).text();
+      const res = await (await jfetch('/api/specs')).text();
       let copied = false;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
@@ -1439,7 +1447,7 @@ function initToolbar() {
 
   document.getElementById('bShot').onclick = async () => {
     try {
-      const res = await (await fetch('/api/screenshot', { method: 'POST', headers: { 'X-WhatsMyPC': '1' } })).json();
+      const res = await (await jfetch('/api/screenshot', { method: 'POST', headers: { 'X-WhatsMyPC': '1' } })).json();
       if (res.file) toast(`Screenshot saved to Pictures: ${res.file}`, 'ok');
       else toast('Screenshot error', 'bad');
     } catch (e) {
@@ -1473,12 +1481,35 @@ function initToolbar() {
     res.style.display = 'block';
     res.innerHTML = matches.map(m => `<div onclick="switchTab('${m.id}'); document.getElementById('results').style.display='none'; document.getElementById('q').value='';"><i class="fi ${m.icon}" style="margin-right:6px;"></i> ${m.name}</div>`).join('');
   };
+  q.onkeydown = e => { if (e.key === 'Enter' && res.firstElementChild) res.firstElementChild.click(); };
+
+  // Shortcuts documented in the README
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { res.style.display = 'none'; q.value = ''; q.blur(); return; }
+    if (!e.ctrlKey || e.altKey || e.shiftKey) return;
+    const k = e.key.toLowerCase();
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+    if (k === 'k') { e.preventDefault(); q.focus(); q.select(); }
+    else if (k === 'c' && !typing && !String(window.getSelection())) { e.preventDefault(); document.getElementById('bSpecs').click(); }
+    else if (k === 's') { e.preventDefault(); document.getElementById('bShot').click(); }
+    else if (k === 'o') { e.preventDefault(); document.getElementById('bOverlay').click(); }
+  });
+}
+
+// Apply saved theme / compact mode on startup (previously only applied after saving in Settings)
+async function applySavedSettings() {
+  try {
+    const s = await (await fetch('/api/settings')).json();
+    if (s.theme) document.body.setAttribute('data-theme', s.theme);
+    document.body.classList.toggle('compact', !!s.compact);
+  } catch (e) {}
 }
 
 // Bootstrap
 window.addEventListener('DOMContentLoaded', () => {
   initNav();
   initToolbar();
+  applySavedSettings();
   renderPage();
   pollLiveData();
 });
