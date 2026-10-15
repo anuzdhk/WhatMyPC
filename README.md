@@ -69,8 +69,8 @@ Unlike heavy Electron-based or web-wrapped tools, **WhatsMyPC** is compiled into
 ## 🚀 Quick Start & Installation
 
 ### Option 1: Windows Installer (.msi) — *Recommended*
-Download the latest `WhatsMyPC-v1.0.0.msi` from the [Releases](https://github.com/anuzdhk/WhatsMyPC/releases) page or locate it in the `WhatMyPC_Final` folder:
-1. Double-click **`WhatsMyPC-v1.0.0.msi`**.
+Download the latest `WhatsMyPC-v2.0.0.msi` from the [Releases](https://github.com/anuzdhk/WhatsMyPC/releases) page or locate it in the `WhatMyPC_Final` folder:
+1. Double-click **`WhatsMyPC-v2.0.0.msi`**.
 2. Follow the setup prompts.
 3. Access **WhatsMyPC** directly from your Windows Start Menu or Desktop shortcut.
 
@@ -159,7 +159,7 @@ pcpedia_rust/target/release/whatsmypc.exe
 ### Build MSI Package
 ```powershell
 cd WhatMyPC_Final
-wix build "WhatsMyPC.wxs" -o "WhatsMyPC-v1.0.0.msi"
+wix build "WhatsMyPC.wxs" -o "WhatsMyPC-v2.0.0.msi"
 ```
 
 ---
